@@ -21,6 +21,10 @@ fault. It MUST NOT create, modify or delete any file in the repository.
 - **WHEN** `ontrack-product-check ADR-0003` runs in a repository holding `docs/adr/product/ADR-0003-location.md`
 - **THEN** it reads the traits of that file
 
+#### Scenario: Superseded ADR
+- **WHEN** that file is superseded: an `accepted` ADR anywhere under `docs/adr/` names it in `supersedes:`, as `product/ADR-0003` or, from the same directory, by its id
+- **THEN** it reads the traits of the superseding ADR instead, following the chain to the ADR no other one supersedes, and a check that depends on ADR-0003 reads its root there too
+
 #### Scenario: ADR missing
 - **WHEN** no file matches `docs/adr/product/ADR-0003-*.md`
 - **THEN** it exits non-zero and standard error names the pattern it looked for

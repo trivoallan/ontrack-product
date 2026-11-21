@@ -81,6 +81,37 @@ function front(text: string): Front {
 const read = (file: string) => front(readFileSync(file, 'utf8'));
 const rel = (root: string, file: string) => relative(root, file);
 
+// The ADR in force for one of this track's ADRs: the repository's copy, or
+// the `accepted` ADR anywhere under docs/adr/ whose `supersedes:` names it,
+// followed to the end of the chain. An entry is `<namespace>/<id>`, or a
+// bare `<id>` in the superseding ADR's own directory; the id is the `adr:`
+// key or the file name without `.md`, as ontrack reads it.
+function inForce(root: string, number: string): string {
+  const copy = findAdr(root, number);
+  const base = join(root, 'docs', 'adr');
+  const all = readdirSync(base, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .flatMap((d) => readdirSync(join(base, d.name)).filter((f) => f.endsWith('.md')).map((f) => ({ ns: d.name, file: join(base, d.name, f) })))
+    .map((a) => {
+      const f = read(a.file);
+      const ids = [basename(a.file, '.md'), typeof f.adr === 'string' ? f.adr : ''].filter(Boolean);
+      const names = f.status === 'accepted' && Array.isArray(f.supersedes) ? f.supersedes : [];
+      return { ...a, ids, names };
+    });
+  const names = (a: (typeof all)[number], b: (typeof all)[number]) =>
+    a.names.some((n) => {
+      const [ns, id] = n.includes('/') ? [n.slice(0, n.indexOf('/')), n.slice(n.indexOf('/') + 1)] : [a.ns, n];
+      return ns === b.ns && b.ids.includes(id);
+    });
+  let current = all.find((a) => a.file === copy)!;
+  for (const seen = new Set([current]); ; ) {
+    const next = all.find((a) => a !== current && names(a, current));
+    if (!next || seen.has(next)) return current.file;
+    seen.add(next);
+    current = next;
+  }
+}
+
 // One ruled value: a non-empty string.
 function one(f: Front, key: string, number: string, file: string, allowed?: string[]): string {
   const v = f[`traits.${key}`];
@@ -92,7 +123,7 @@ function one(f: Front, key: string, number: string, file: string, allowed?: stri
 
 // Another ADR of this track the check depends on, which must be accepted.
 function accepted(root: string, number: string, by: string): { file: string; f: Front } {
-  const path = findAdr(root, number);
+  const path = inForce(root, number);
   const f = read(path);
   if (f.status !== 'accepted') throw new CheckError(`${by}: ${number} must be accepted first (it is ${f.status || 'not ruled'})`);
   return { file: rel(root, path), f };
@@ -147,8 +178,9 @@ function report(fails: string[], pass: string): number {
 }
 
 // --- ADR-0001: every ruled copy against adr/.mdschema.yml, plus named authors.
-function adrs(root: string, file: string): number {
-  const dir = dirname(file);
+function adrs(root: string): number {
+  // The track's directory, even when ADR-0001 itself is superseded.
+  const dir = dirname(findAdr(root, 'ADR-0001'));
   const ruled = readdirSync(dir).filter((f) => f.endsWith('.md')).map((f) => join(dir, f)).filter((f) => read(f).status !== 'proposed');
   if (!ruled.length) {
     console.log('ADR-0001: no ADR is ruled yet, nothing to check');
@@ -259,7 +291,7 @@ function main(argv: string[], root = process.cwd()): number {
     const [number] = argv;
     const check = CHECKS[number];
     if (!check) throw new CheckError(`this package ships no check for ${number}`);
-    return check(root, findAdr(root, number));
+    return check(root, inForce(root, number));
   } catch (e) {
     if (!(e instanceof CheckError)) throw e;
     console.error(e.message);

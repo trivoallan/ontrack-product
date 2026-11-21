@@ -211,9 +211,61 @@ test('ADR-0003: a tracked file deleted from disk is skipped, not read', () => {
   assert.equal(r.code, 0, r.out + r.err);
 });
 
+// --- A superseded ADR: the check reads the ADR that supersedes it.
+
+// A repository's own decision in docs/adr/local/, superseding `supersedes`.
+const local = (file: string, supersedes: string, traits: string, status = 'accepted'): Record<string, string> => ({
+  [`docs/adr/local/${file}`]: `---\nadr: ${file.slice(0, 8)}\nstatus: ${status}\nsupersedes: [${supersedes}]\ntraits:\n  product:\n${traits}\n---\n\n# Local\n`,
+});
+
+test('superseded ADR-0003: the root comes from the local ADR that supersedes it', () => {
+  const files = {
+    ...local('ADR-0031-wiki.md', 'product/ADR-0003', '    artifacts:\n      root: wiki/'),
+    'wiki/prd.md': prd(),
+    'research/prd.md': prd('observed'),
+  };
+  const r = run(repo(files, [ADR['0004'](), ADR['0003']('research/')]), 'ADR-0004');
+  assert.notEqual(r.code, 0);
+  assert.match(r.out, /wiki\/prd\.md has no evidence: key/);
+  assert.doesNotMatch(r.out, /research\//);
+});
+
+test('superseded ADR-0003: a chain is followed, a bare name resolves in its own directory', () => {
+  const files = {
+    ...local('ADR-0031-wiki.md', 'product/ADR-0003', '    artifacts:\n      root: wiki/'),
+    ...local('ADR-0032-notes.md', 'ADR-0031-wiki', '    artifacts:\n      root: notes/'),
+    'notes/prd.md': prd('observed'),
+    'wiki/prd.md': prd(),
+  };
+  const r = run(repo(files, [ADR['0004'](), ADR['0003']('research/')]), 'ADR-0004');
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /1 product artifact\(s\) under notes\//);
+});
+
+test('superseded ADR-0003: a proposed ADR supersedes nothing', () => {
+  const files = { ...local('ADR-0031-wiki.md', 'product/ADR-0003', '    artifacts:\n      root: wiki/', 'proposed'), 'research/prd.md': prd('observed') };
+  const r = run(repo(files, [ADR['0004'](), ADR['0003']('research/')]), 'ADR-0004');
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /under research\//);
+});
+
+test('superseded ADR-0002: the check runs on the superseding ruling', () => {
+  const files = local('ADR-0030-nanopm.md', 'product/ADR-0002', '    toolkit: nanopm');
+  const r = run(repo(files, [ADR['0002']('pm-skills')]), 'ADR-0002');
+  assert.equal(r.code, 0, r.out + r.err);
+  assert.match(r.out, /product\.toolkit is nanopm/);
+});
+
+test('superseded ADR-0001: ruled copies are still read from the track directory', () => {
+  const adrs = shipped.map((f) => [f, readFileSync(join(pkg, 'adr', f), 'utf8')] as Pair);
+  const files = local('ADR-0040-records.md', 'product/ADR-0001', '    records: nygard');
+  const r = run(repo(files, adrs), 'ADR-0001');
+  assert.equal(r.code, 0, r.out + r.err);
+});
+
 // --- ADR-0004.
 
-const ev = (files: Record<string, string>, levels?: string, required?: string) =>
+const ev =(files: Record<string, string>, levels?: string, required?: string) =>
   run(repo(files, [ADR['0004'](levels, required), ADR['0003']('research/')]), 'ADR-0004');
 
 test('ADR-0004: missing evidence', () => {
