@@ -98,11 +98,13 @@ function accepted(root: string, number: string, by: string): { file: string; f: 
   return { file: rel(root, path), f };
 }
 
-// Markdown files tracked by git, relative to the root.
+// Markdown files tracked by git, relative to the root, that are still on
+// disk: a tracked file deleted from the working tree, not yet staged, is
+// not there to read.
 function tracked(root: string): string[] {
   const r = spawnSync('git', ['ls-files', '-z', '--', '*.md'], { cwd: root, encoding: 'utf8' });
   if (r.status !== 0) throw new CheckError(`git ls-files failed in ${root}: ${r.stderr.trim()}`);
-  return r.stdout.split('\0').filter(Boolean);
+  return r.stdout.split('\0').filter((p) => p && existsSync(join(root, p)));
 }
 
 const under = (dir: string, path: string) => dir === '.' || path.startsWith(`${dir}/`);
