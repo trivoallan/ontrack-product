@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/trivoallan/ontrack-product/compare/v0.1.0...v0.1.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* skip tracked files deleted from the working tree ([#4](https://github.com/trivoallan/ontrack-product/issues/4)) ([6a2bd7d](https://github.com/trivoallan/ontrack-product/commit/6a2bd7d6bd41be73a48fb53afa3056054721c9e5))
+
 ## 0.1.0 (2026-11-21)
 
 

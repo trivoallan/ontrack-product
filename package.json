@@ -1,6 +1,6 @@
 {
   "name": "@trivoallan/ontrack-product",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Product-management conventions your repositories import as ADRs: toolkit, where artifacts live, the evidence they claim, and when a change may build on them. Checked in CI.",
   "license": "MIT-0",
   "keywords": [
