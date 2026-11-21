@@ -2,7 +2,7 @@
 // repository holding copies of this package's ADRs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -201,6 +201,13 @@ test('ADR-0003: root leaving the repository', () => {
 
 test('ADR-0003: artifacts in place pass, untyped Markdown outside ignored', () => {
   const r = run(repo({ 'research/a/prd.md': prd('observed'), 'README.md': '# hi\n' }, [ADR['0003']('research')]), 'ADR-0003');
+  assert.equal(r.code, 0, r.out + r.err);
+});
+
+test('ADR-0003: a tracked file deleted from disk is skipped, not read', () => {
+  const root = repo({ 'research/prd.md': prd('observed'), 'notes/gone.md': '# gone\n' }, [ADR['0003']('research')]);
+  rmSync(join(root, 'notes/gone.md'));
+  const r = run(root, 'ADR-0003');
   assert.equal(r.code, 0, r.out + r.err);
 });
 
