@@ -1,0 +1,52 @@
+{
+  "name": "@trivoallan/ontrack-product",
+  "version": "0.0.0",
+  "description": "Product-management conventions your repositories import as ADRs: toolkit, where artifacts live, the evidence they claim, and when a change may build on them. Checked in CI.",
+  "license": "MIT-0",
+  "keywords": [
+    "ontrack",
+    "ontrack-tracks",
+    "adr",
+    "architecture-decision-records",
+    "product-management",
+    "conventions",
+    "openspec",
+    "coding-agents",
+    "claude-code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trivoallan/ontrack-product.git"
+  },
+  "type": "module",
+  "files": [
+    "adr/",
+    "dist/ontrack-product-check.js"
+  ],
+  "bin": {
+    "ontrack-product-check": "dist/ontrack-product-check.js"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test": "tsc --noEmit && node --test --experimental-test-coverage --test-coverage-include='checks/*.ts' --test-coverage-exclude='checks/*.test.ts' --test-coverage-lines=90 checks/*.test.ts"
+  },
+  "ontrack": {
+    "adr": "adr",
+    "namespace": "product"
+  },
+  "devDependencies": {
+    "@fission-ai/openspec": "1.13.1",
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "@jackchuka/mdschema": "0.15.1"
+  },
+  "allowScripts": {
+    "@jackchuka/mdschema": false
+  }
+}
