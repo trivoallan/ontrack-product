@@ -1,0 +1,30 @@
+name: ci
+
+# The pull request gate: one job, `test`. pull_request only, never
+# pull_request_target: forks run it with a read-only token and no secret.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # npm 12 blocks dependency install scripts and honours .npmrc's
+      # min-release-age; Node 24 ships npm 11. Drop once Node ships npm 12.
+      - run: npm install --global npm@12.2.2 # zizmor: ignore[adhoc-packages] npm itself, exact version
+      # From package-lock.json without resolving again; an install script not
+      # named in package.json's allowScripts fails here.
+      - run: npm ci --strict-allow-scripts
+      # tsc --noEmit, then node --test on checks/*.test.ts with 90 % line coverage.
+      - run: npm test
+      # The OpenSpec changes and specs of this repository validate.
+      - run: npx --no-install openspec validate --all --no-interactive

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "rootDir": "checks",
+    "outDir": "dist",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "lib": ["es2023"],
+    "types": ["node"],
+    "strict": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["checks/*.ts"]
+}

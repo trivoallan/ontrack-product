@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jackchuka/mdschema/main/schema.json
+#
+# Schema for the ontrack-product ADRs once a repository has RULED on them:
+# status decided, date set, no trait key left empty, Nygard sections present,
+# and the how-to-rule block gone. A convention as shipped fails it on purpose
+# (still `proposed`, traits empty); only ADR-0001, shipped `accepted`, passes.
+#
+# `ontrack-product-check ADR-0001` runs it on the ruled copies, and itself
+# refuses an empty `authors:` list, which mdschema cannot express.
+#
+# Trait keys are `optional`: an ABSENT key passes, so a `rejected` ADR with no
+# `traits:` block passes. A key that is PRESENT but empty is refused.
+frontmatter:
+  fields:
+    - { name: "adr", type: string }
+    - { name: "slug", type: string }
+    - { name: "title", type: string }
+    - { name: "status", enum: [accepted, rejected] }
+    - { name: "revision", type: number }
+    - { name: "date", format: date }
+    - { name: "authors", type: array }
+    - { name: "supersedes", type: array }
+    - { name: "traits", type: object, optional: true }
+    # ADR-0002
+    - { name: "traits.product.toolkit", enum: [pm-skills, nanopm, none], optional: true }
+    # ADR-0003
+    - { name: "traits.product.artifacts.root", type: string, optional: true }
+    # ADR-0004
+    - { name: "traits.product.evidence.levels", type: array, optional: true }
+    - { name: "traits.product.evidence.required", type: string, optional: true }
+    # ADR-0005
+    - { name: "traits.product.handoff", enum: [openspec, none], optional: true }
+structure:
+  - heading:
+      pattern: "^# .+"
+    children:
+      - heading: "## Status"
+      - heading: "## Context"
+      - heading: "## Decision"
+        forbidden_text: ["Everything below disappears when you rule"]
+      - heading: "## Consequences"
+        children:
+          - heading: "### Positive"
+          - heading: "### Negative"
+          - heading: "### Neutral"
+      - heading: "## Alternatives Considered"
+        allow_additional: true
+      - heading: "## References"
