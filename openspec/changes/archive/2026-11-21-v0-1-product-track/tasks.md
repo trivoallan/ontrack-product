@@ -29,9 +29,9 @@
 
 - [x] 4.1 Write `README.md` (five conventions, their `check:` lines, `npm i -D product@npm:@trivoallan/ontrack-product`, standalone) and verify it meets the track-package README requirement
 - [x] 4.2 Add `release-please-config.json`, `.release-please-manifest.json` (`0.0.0`) and the release workflow, and verify the config validates against release-please's schema
-- [ ] 4.3 Add the CI workflow running `npm ci` and `npm test` on pull requests, and verify it passes on the change's pull request
+- [x] 4.3 Add the CI workflow running `npm ci` and `npm test` on pull requests, and verify it passes on the change's pull request
 
 ## 5. End to end
 
 - [x] 5.1 Install the track with `file:` in a scratch repository, run `npx ontrack plan` and `npx ontrack apply`, rule the five ADRs, and verify `npx ontrack check` passes, then fails after removing an `evidence:` key
-- [ ] 5.2 Run `openspec validate --all` and `openspec archive v0-1-product-track` in the pull request that checks the last task, and verify `openspec/specs/` holds the four capabilities
+- [x] 5.2 Run `openspec validate --all` and `openspec archive v0-1-product-track` in the pull request that checks the last task, and verify `openspec/specs/` holds the four capabilities
