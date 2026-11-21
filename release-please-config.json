@@ -5,7 +5,8 @@
   "pull-request-title-pattern": "chore: release ${version}",
   "packages": {
     ".": {
-      "release-type": "node"
+      "release-type": "node",
+      "initial-version": "0.1.0"
     }
   }
 }
